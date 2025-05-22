@@ -61,6 +61,8 @@ target_include_directories(goodtimesheater PRIVATE
 target_link_libraries(goodtimesheater 
         hardware_spi
         hardware_i2c
+        hardware_adc
+        hardware_pwm
         )
 
 pico_add_extra_outputs(goodtimesheater)

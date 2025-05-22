@@ -18,7 +18,16 @@ int main()
 
     StartupLEDEffect();
     
-    ircam = std::make_unique<MLX90614>(I2C_PORT, I2C_SDA, I2C_SCL, 50000, 0);
+
+    adc_init();
+
+    adc_gpio_init(PIN::PIN_CURRENT_SENSE);
+    adc_gpio_init(PIN::PIN_VOLTAGE_SENSE);
+
+    init_out(PIN::PIN_HEATER, 0);
+
+
+    ircam = std::make_unique<MLX90614>(INTERFACE::I2C_IR, PIN::PIN_IR_SDA, PIN::PIN_IR_SCL, 50000, 0);
     sleep_ms(10);
 
     ircam->SetMustSwitchFromPWM(true);
@@ -36,7 +45,7 @@ int main()
 
     ircam->StartReadingPWM(380.0f, 0.0f);
 
-    float val;
+    float val = 0.0f;
     bool hasread = false;
 
     ircam->SetOnPWMMeasurement([&](float v)
@@ -45,24 +54,38 @@ int main()
         hasread = true;
     });
 
-    while(true)
-    {
-        if(hasread)
-        {
-            printf("Reading: %.3fC\n", val);
-            hasread = false;
-        }
-        sleep_ms(10);
-    }
 
-    init_in(I2C_SDA);
-    init_out(I2C_SCL, true);
 
     while(true)
     {
-        printf("%i\n", gpio_get(I2C_SDA));
-        sleep_ms(10);
+
+        bool heaton = (val < 50.0f) && val != 0.0f;
+        printf("HEATER: %s\n", (heaton)?"ON":"OFF");
+        printf("Temperature: %.3fC\n", val);
+        
+        gpio_put(PIN::PIN_HEATER, heaton);
+
+        adc_select_input(INTERFACE::ADC_INPUT_CURRENT_SENSE);
+
+        uint16_t current_raw = adc_read();
+        float current_sense_v = float(current_raw)*ADC_CONVERSION_FACTOR;
+        float voltage_drop = (current_sense_v)/-AMPLIFER_GAIN;
+        float current = voltage_drop/R_HEATER;
+        printf("current sense measured: %.3f\n", current_sense_v);
+        printf("voltage drop: %.4f\n", voltage_drop);
+        printf("current: %.3f\n", current);
+
+        adc_select_input(INTERFACE::ADC_INPUT_VOLTAGE_SENSE);
+        uint16_t voltage_raw = adc_read();
+        float voltage_v = float(voltage_raw)*ADC_CONVERSION_FACTOR;
+        float input_voltage = (voltage_v)*VOLTAGE_DIVISON;
+        printf("input voltage sense: %.4f\n", voltage_v);
+        printf("input voltage: %.3f\n", input_voltage);
+
+        sleep_ms(400);
+        clear_console();
     }
+
 
     while(true)
     {
