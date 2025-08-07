@@ -31,12 +31,29 @@ int main()
     sleep_ms(10);
 
     ircam->SetMustSwitchFromPWM(true);
+    
+
+    // ircam->SetTOMin(27315); // 0°C
+    // ircam->SetTOMax(65315); // 380°C
+
+    // printf("TOMax %i\n", (int)ircam->GetTOMax());
+    // printf("TOMin %i\n", (int)ircam->GetTOMin());
+
     // uint16_t max = ircam->GetTOMax();
     // uint16_t min = ircam->GetTOMin();
     // printf("max: %i, min: %i\n", max, min);
 
     // volatile MLX90614::config conf;
     // volatile MLX90614::pwmctrl pwm;
+    // conf.value = ircam->ReadCTRLReg1();
+    // pwm.value = ircam->ReadPWMCTRLReg();
+
+    // printf("config: 0x%x\n", conf.value);
+    // printf("pwmctrl: 0x%x\n", pwm.value);
+
+    // pwm.value |= 0b10;
+    // ircam->WritePWMCTRLReg(pwm.value);
+
     // conf.value = ircam->ReadCTRLReg1();
     // pwm.value = ircam->ReadPWMCTRLReg();
 
